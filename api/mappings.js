@@ -1,4 +1,9 @@
-import { kv } from '@vercel/kv';
+import { Redis } from '@upstash/redis';
+
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL,
+  token: process.env.KV_REST_API_TOKEN,
+});
 
 export default async function handler(req, res) {
   // Enable CORS
@@ -13,20 +18,20 @@ export default async function handler(req, res) {
   try {
     if (req.method === 'GET') {
       // Load mappings
-      const mappings = await kv.get('icon-mappings');
+      const mappings = await redis.get('icon-mappings');
       return res.status(200).json(mappings || {});
     }
 
     if (req.method === 'POST') {
       // Save mappings
       const mappings = req.body;
-      await kv.set('icon-mappings', mappings);
+      await redis.set('icon-mappings', JSON.stringify(mappings));
       return res.status(200).json({ success: true });
     }
 
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (error) {
-    console.error('KV Error:', error);
+    console.error('Redis Error:', error);
     return res.status(500).json({ error: error.message });
   }
 }
