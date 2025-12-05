@@ -1,10 +1,5 @@
 import { Redis } from '@upstash/redis';
 
-const redis = new Redis({
-  url: process.env.KV_REST_API_URL,
-  token: process.env.KV_REST_API_TOKEN,
-});
-
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,6 +11,11 @@ export default async function handler(req, res) {
   }
 
   try {
+    const redis = new Redis({
+      url: process.env.KV_REST_API_URL,
+      token: process.env.KV_REST_API_TOKEN,
+    });
+
     if (req.method === 'GET') {
       // Load mappings
       const mappings = await redis.get('icon-mappings');
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       // Save mappings
       const mappings = req.body;
-      await redis.set('icon-mappings', JSON.stringify(mappings));
+      await redis.set('icon-mappings', mappings);
       return res.status(200).json({ success: true });
     }
 
